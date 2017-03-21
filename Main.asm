@@ -82,6 +82,87 @@ Main:
 ;**************************************************************
 
 Manual:
+	IN 		THETA		;Stop movement
+	STORE	DTheta
+	LOAD	Zero
+	STORE 	DVel
+
+	IN		IR_LO		;Go to Forward if play button is pressed
+	SUB		REM_PLAY
+	JZERO 	Forward
+	
+	IN		IR_LO		;Go to Reverse if pause button is pressed
+	SUB		REM_PAUSE
+	JZERO	Reverse
+	
+	IN		IR_LO		;Go to TurnLeft if rewind button is pressed
+	SUB		REM_REW
+	JZERO	TurnLeft
+	
+	IN		IR_LO		;Go to TurnRight if fast forward button is pressed
+	SUB		REM_FF
+	JZERO	TurnRight
+	
+	JUMP 	Manual		;If none of these are pressed, keep checking
+	
+Forward:
+	IN 		THETA		;keep angle the same
+	STORE	DTheta
+	LOAD	FMid		;move forward
+	STORE 	DVel
+	
+	In 		IR_LO		;check if robot should stop
+	SUB		REM_STOP	
+	JZERO	Manual		;go back to manual if so
+	JUMP 	Forward		;otherwise, keep moving forward
+	
+Reverse:
+	IN 		THETA		;keep angle the same
+	STORE	DTheta
+	LOAD	RMid		;move backward
+	STORE 	DVel
+	
+	IN 		IR_LO		;check if robot should stop
+	SUB		REM_STOP	
+	JZERO	Manual		;go back to manual if so
+	JUMP 	Reverse		;otherwise, keep moving backward
+	
+TurnRight:
+	LOAD	Zero		;stop forward/backward movement
+	STORE 	DVel		
+	
+	IN		THETA
+	ADDI	90			;add 90 to THETA
+	;check to make sure it's in range
+	ADDI	-360		
+	JPOS	cont1
+	JZERO	cont1
+	ADDI	360			;restore previous value if necessary
+cont1:
+	STORE 	DTheta		;store corrected value
+	
+	IN 		IR_LO		;check if robot should stop
+	SUB		REM_STOP	
+	JZERO	Manual		;go back to manual if so
+	JUMP 	TurnRight	;otherwise, keep turning
+	
+TurnLeft:
+	LOAD	Zero		;stop forward/backward movement
+	STORE 	DVel		
+	
+	IN		THETA
+	ADDI	-90			;subtract 90 from THETA
+	;check to make sure it's in range
+	JPOS	cont2
+	JZERO	cont2
+	ADDI	360			;restore previous value if necessary
+cont2:
+	STORE 	DTheta		;store corrected value
+	
+	IN 		IR_LO		;check if robot should stop
+	SUB		REM_STOP	
+	JZERO	Manual		;go back to manual if so
+	JUMP 	TurnLeft	;otherwise, keep turning
 	
 
 
@@ -89,8 +170,6 @@ Manual:
 ForeverDisp:
 	CALL   IRDisp      ; Display the current IR code
 	JUMP   ForeverDisp
-
-
 	
 Die:
 ; Sometimes it's useful to permanently stop execution.
@@ -116,7 +195,16 @@ CTimer_ISR:
 	
 
 ;***************************************************************
-;* Subroutines
+;* OUR SUBROUTINES
+;***************************************************************
+
+
+	
+
+	
+	
+;***************************************************************
+;* Given Subroutines
 ;***************************************************************
 
 ; Displays the current 
@@ -646,6 +734,7 @@ I2CError:
 ;* Variables
 ;***************************************************************
 Temp:     DW 0 ; "Temp" is not a great name, but can be useful
+Temp2:	  DW 0 ;
 
 ;***************************************************************
 ;* Constants
@@ -675,7 +764,7 @@ Mask4:    DW &B00010000
 Mask5:    DW &B00100000
 Mask6:    DW &B01000000
 Mask7:    DW &B10000000
-LowByte:  DW &HFF      ; binary 00000000 1111111
+LowByte:  DW &HFF      ; binary 00000000 11111111
 LowNibl:  DW &HF       ; 0000 0000 0000 1111
 
 ; some useful movement values
@@ -696,6 +785,29 @@ RFast:    DW -500
 MinBatt:  DW 140       ; 14.0V - minimum safe battery voltage
 I2CWCmd:  DW &H1190    ; write one i2c byte, read one byte, addr 0x90
 I2CRCmd:  DW &H0190    ; write nothing, read one byte, addr 0x90
+
+; our variables
+
+
+;Remote Control Buttons
+
+REM_1:		DW	&B0010000011011111
+REM_2:		DW	&B1010000001011111
+REM_3:		DW	&B0110000010011111
+REM_4:		DW	&B1110000000011111
+REM_5:		DW	&B0011000011001111
+REM_6:		DW	&B1011000001001111
+REM_7:		DW	&B0111000010001111
+REM_8:		DW	&B1111000000001111
+REM_9:		DW	&B0011100011000111
+REM_0:		DW	&B1011100001000111
+REM_PWR:	DW	&B0000000011111111
+REM_REW:	DW	&B0100100010110111
+REM_PLAY:	DW	&B0010100011010111
+REM_FF:		DW	&B1100100000110111
+REM_PAUSE:	DW	&B1000100001110111
+REM_STOP:	DW	&B0000100011110111
+
 
 ;***************************************************************
 ;* IO address space map
@@ -741,3 +853,4 @@ RIN:      EQU &HC8
 LIN:      EQU &HC9
 IR_HI:    EQU &HD0  ; read the high word of the IR receiver (OUT will clear both words)
 IR_LO:    EQU &HD1  ; read the low word of the IR receiver (OUT will clear both words)
+
