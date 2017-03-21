@@ -1,9 +1,7 @@
-;TEST EDIT
-; StartingPoint_Spr17.asm
-; This program includes a basic movement API that allows the
-; user to specify a desired heading and speed, and the API will
-; attempt to control the robot in an appropriate way.
-; Also includes several math subroutines.
+; MAIN.ASM
+; This program adds to the prewritten subroutines that
+; were given for the project. It allows the DE2Bot to 
+; self park.
 
 ; This code uses the timer interrupt for the control code.
 ORG 0                  ; Jump table is located in mem 0-4
@@ -79,78 +77,20 @@ Main:
 	; If you want to take manual control of the robot,
 	; execute a CLI &B0010 to disable the interrupt.
 	
+;**************************************************************
+;*  OUR CODE
+;**************************************************************
 
-
-; As a quick demo of the movement control, the robot is first
-; directed to turn in-place 90 degrees clockwise, then
-; turn back to 0 degrees while also moving foward, then turn
-; clockwise 90 degrees while moving backwards.
-; During all the movements, a short subroutine reads the IR codes
-; and displays them to the 7-segs just to demonstrate how those
-; values are read.
-
-	LOADI  0
-	STORE  DVel        ; desired forward velocity
-	LOADI  270
-	STORE  DTheta      ; desired heading
-	; The robot should automatically start moving,
-	; trying to match these desired parameters.
+Manual:
 	
-Test1:
-	CALL   IRDisp      ; Display the current IR code
-	CALL   GetThetaErr ; get the heading error
-	CALL   Abs
-	OUT    LCD         ; useful debug info
-	ADDI   -5          ; check if within 5 degrees
-	JPOS   Test1       ; if not, keep testing
-	; the robot is now within 5 degrees of 270
-	
-	LOADI  0           ; new heading
-	STORE  DTheta
-	LOAD   FMid        ; forward velocity
-	STORE  DVel
 
-Test2:
-	CALL   IRDisp      ; Display the current IR code
-	CALL   GetThetaErr ; get the heading error
-	CALL   Abs
-	OUT    LCD         ; useful debug info
-	ADDI   -5          ; check if within 5 degrees
-	JPOS   Test2       ; if not, keep testing
-	; the robot is now within 5 degrees of 0
-	
-	LOADI  270         ; new heading
-	STORE  DTheta
-	LOAD   RFast       ; fast reverse velocity
-	STORE  DVel
-; NOTE: RFast is 500, which is outside the recommended
-; range for DVel.  You might notice that the robot is
-; slow to reach the desired heading.
 
-Test3:
-	CALL   IRDisp      ; Display the current IR code
-	CALL   GetThetaErr ; get the heading error
-	CALL   Abs
-	OUT    LCD         ; useful debug info
-	ADDI   -5          ; check if within 5 degrees
-	JPOS   Test3       ; if not, keep testing
-	; the robot is now within 5 degrees of 0
-	
-	; done
-	LOADI  0
-	STORE  DVel
 	
 ForeverDisp:
 	CALL   IRDisp      ; Display the current IR code
 	JUMP   ForeverDisp
 
-IRDisp:
-	IN     IR_HI       ; get the high word
-	OUT    SSEG1
-	IN     IR_LO       ; get the low word
-	OUT    SSEG2
-;	OUT    IR_HI       ; this would reset the value to 0
-	RETURN
+
 	
 Die:
 ; Sometimes it's useful to permanently stop execution.
@@ -174,6 +114,49 @@ CTimer_ISR:
 	CALL   ControlMovement
 	RETI   ; return from ISR
 	
+
+;***************************************************************
+;* Subroutines
+;***************************************************************
+
+; Displays the current 
+IRDisp:
+	IN     IR_HI       ; get the high word
+	OUT    SSEG1
+	IN     IR_LO       ; get the low word
+	OUT    SSEG2
+;	OUT    IR_HI       ; this would reset the value to 0
+	RETURN
+
+; Returns the current angular error wrapped to +/-180
+GetThetaErr:
+	; convenient way to get angle error in +/-180 range is
+	; ((error + 180) % 360 ) - 180
+	IN     THETA
+	SUB    DTheta      ; actual - desired angle
+	CALL   Neg         ; desired - actual angle
+	ADDI   180
+	CALL   Mod360
+	ADDI   -180
+	RETURN
+	
+; caps a value to +/-MaxVal
+CapValue:
+	SUB     MaxVal
+	JPOS    CapVelHigh
+	ADD     MaxVal
+	ADD     MaxVal
+	JNEG    CapVelLow
+	SUB     MaxVal
+	RETURN
+CapVelHigh:
+	LOAD    MaxVal
+	RETURN
+CapVelLow:
+	LOAD    MaxVal
+	CALL    Neg
+	RETURN
+	MaxVal: DW 510
 	
 ; Control code.  If called repeatedly, this code will attempt
 ; to control the robot to face the angle specified in DTheta
@@ -214,42 +197,7 @@ ControlMovement:
 	
 	RETURN
 	CMAErr: DW 0       ; holds angle error velocity
-
-; Returns the current angular error wrapped to +/-180
-GetThetaErr:
-	; convenient way to get angle error in +/-180 range is
-	; ((error + 180) % 360 ) - 180
-	IN     THETA
-	SUB    DTheta      ; actual - desired angle
-	CALL   Neg         ; desired - actual angle
-	ADDI   180
-	CALL   Mod360
-	ADDI   -180
-	RETURN
-
-; caps a value to +/-MaxVal
-CapValue:
-	SUB     MaxVal
-	JPOS    CapVelHigh
-	ADD     MaxVal
-	ADD     MaxVal
-	JNEG    CapVelLow
-	SUB     MaxVal
-	RETURN
-CapVelHigh:
-	LOAD    MaxVal
-	RETURN
-CapVelLow:
-	LOAD    MaxVal
-	CALL    Neg
-	RETURN
-	MaxVal: DW 510
-
-;***************************************************************
-;* Subroutines
-;***************************************************************
-
-
+	
 ;*******************************************************************************
 ; Mod360: modulo 360
 ; Returns AC%360 in AC
