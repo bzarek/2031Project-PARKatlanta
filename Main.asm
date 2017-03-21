@@ -80,6 +80,13 @@ Main:
 ;**************************************************************
 ;*  OUR CODE
 ;**************************************************************
+START:
+	IN 		IR_LO	
+	SUB		REM_0
+	JZERO 	Manual
+	
+	JUMP 	START
+
 
 Manual:
 	IN 		THETA		;Stop movement
@@ -131,6 +138,12 @@ TurnRight:
 	LOAD	Zero		;stop forward/backward movement
 	STORE 	DVel		
 	
+	;Loop back if not within 5 degrees
+	CALL 	GetThetaErr
+	CALL 	Abs
+	ADDI	-5
+	JPOS	TurnRight
+	
 	IN		THETA
 	ADDI	90			;add 90 to THETA
 	;check to make sure it's in range
@@ -149,6 +162,12 @@ cont1:
 TurnLeft:
 	LOAD	Zero		;stop forward/backward movement
 	STORE 	DVel		
+	
+	;Loop back if not within 5 degrees
+	CALL 	GetThetaErr
+	CALL 	Abs
+	ADDI	-5
+	JPOS	TurnRight
 	
 	IN		THETA
 	ADDI	-90			;subtract 90 from THETA
