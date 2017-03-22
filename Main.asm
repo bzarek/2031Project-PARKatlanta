@@ -150,7 +150,7 @@ TurnRight:
 	JPOS	TurnRight
 	
 	IN		THETA
-	ADDI	90			;add 90 to THETA
+	ADDI	-90			;add 90 to THETA
 	CALL 	AngleCap	;put angle in range
 	STORE 	DTheta		;store corrected value
 	
@@ -173,7 +173,7 @@ TurnLeft:
 	JPOS	TurnRight 	;otherwise, keep turning
 	
 	IN		THETA
-	ADDI	-90			;subtract 90 from THETA
+	ADDI	90			;subtract 90 from THETA
 	CALL	AngleCap	;put angle in range
 	STORE 	DTheta		;store corrected value
 	
@@ -298,6 +298,58 @@ GoToAngleTest:			;keep looping until angle is correct
 	CALL	Abs
 	ADDI	-5
 	JPOS	GoToAngleTest
+	
+	RETURN
+	
+;***************************************************************
+;ParallelPark
+;
+;ParallelPark executes a parallel park maneuver assuming the 
+;DE2Bot is in position
+;***************************************************************
+
+ParallelPark:
+	LOAD	RMid
+	STORE	VV
+	LOAD	HalfMeter
+	STORE	XX
+	
+	IN		THETA
+	ADDI	45			;rotate counterclockwise
+	STORE	DTheta
+	
+	CALL	MoveXX
+	
+	IN		THETA		;rotate back
+	ADDI	-45
+	STORE	45
+	
+	LOADI	100
+	STORE	XX
+	
+	CALL	MoveXX
+	
+	RETURN
+	
+;***************************************************************
+;PerpPark
+;
+;PerpPark executes a perpendicular park maneuver assuming the 
+;DE2Bot is in position
+;***************************************************************
+
+PerpPark:
+	;Rotate 90 Degrees
+	LOADI	90
+	STORE	DD
+	CALL	RotateByDD
+	
+	;Back Up
+	LOAD	HalfMeter
+	STORE	XX
+	LOAD	RMid
+	STORE 	VV
+	CALL	MoveXX
 	
 	RETURN
 	
