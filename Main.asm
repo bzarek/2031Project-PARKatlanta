@@ -142,21 +142,19 @@ TurnRight:
 	CALL 	GetThetaErr
 	CALL 	Abs
 	ADDI	-5
-	JPOS	TurnRight
-	
-	IN		THETA
-	ADDI	90			;add 90 to THETA
-	;check to make sure it's in range
-	ADDI	-360		
-	JPOS	cont1
-	JZERO	cont1
-	ADDI	360			;restore previous value if necessary
-cont1:
-	STORE 	DTheta		;store corrected value
 	
 	IN 		IR_LO		;check if robot should stop
 	SUB		REM_STOP	
 	JZERO	Manual		;go back to manual if so
+	
+	JPOS	TurnRight
+	
+	IN		THETA
+	ADDI	90			;add 90 to THETA
+	CALL 	AngleCap	;put angle in range
+	STORE 	DTheta		;store corrected value
+	
+	
 	JUMP 	TurnRight	;otherwise, keep turning
 	
 TurnLeft:
@@ -167,20 +165,18 @@ TurnLeft:
 	CALL 	GetThetaErr
 	CALL 	Abs
 	ADDI	-5
-	JPOS	TurnRight
-	
-	IN		THETA
-	ADDI	-90			;subtract 90 from THETA
-	;check to make sure it's in range
-	JPOS	cont2
-	JZERO	cont2
-	ADDI	360			;restore previous value if necessary
-cont2:
-	STORE 	DTheta		;store corrected value
 	
 	IN 		IR_LO		;check if robot should stop
 	SUB		REM_STOP	
 	JZERO	Manual		;go back to manual if so
+	
+	JPOS	TurnRight 	;otherwise, keep turning
+	
+	IN		THETA
+	ADDI	-90			;subtract 90 from THETA
+	CALL	AngleCap	;put angle in range
+	STORE 	DTheta		;store corrected value
+	
 	JUMP 	TurnLeft	;otherwise, keep turning
 	
 
@@ -217,9 +213,116 @@ CTimer_ISR:
 ;* OUR SUBROUTINES
 ;***************************************************************
 
+;***************************************************************
+;MoveXX 
+;
+;MoveXX causes the robot to move forward or backward by the 
+;number of units stored in XX. 1 unit = 1.04 mm
+;TO USE: Store distance in XX and velocity in VV, 
+;then call function
+;***************************************************************
+XX:		DW	0		;# of cm to move
+VV:		DW	0		;Speed (and direction)
+PrevX:	DW	0
+PrevY:	DW	0
 
+MoveXX:
+	;set velocity 
+	LOAD	VV
+	STORE 	DVel
 	
+	;Store current position of robot
+	IN 		XPOS
+	STORE	PrevX
+	IN 		YPOS
+	STORE 	PrevY
+	
+MoveXXTest: ;continuously check how far it has traveled
+	IN		XPOS
+	SUB		PrevX
+	CALL	Abs
+	STORE	L2X
+	IN		YPOS
+	SUB		PrevY
+	CALL	Abs
+	STORE	L2Y
+	
+	CALL	L2Estimate
+	CALL	Abs
+	
+	SUB		XX		;check if it has gone far enough
+	JNEG	MoveXXTest
+	
+	;has gone far enough so STOP
+	Load 	Zero
+	STORE	DVel
+	
+	RETURN 
 
+;***************************************************************
+;RotateByDD
+;
+;RotateByDD causes the robot to rotate by the angle stored in 
+;DD. 
+;TO USE: Store the change in theta in DD and then call function
+;***************************************************************
+DD:	DW		0			;value representing # of DEG to turn
+RotateByDD:
+	IN		THETA		;read in current angle
+	ADD		DD			;add value
+	CALL 	AngleCap	;restrict angle to range 0 to 359
+	STORE	DTheta		;make robot turn to that angle
+	
+RotateByDDTest:			;keep looping until angle is correct
+	CALL	GetThetaError
+	CALL	Abs
+	ADDI	-5
+	JPOS	RotateByDDTest
+	
+	RETURN
+	
+;***************************************************************
+;GoToAngle
+;
+;GoToAngle makes the robot turn to an absolute angle
+;TO USE: Store the angle in DD and then call function
+;***************************************************************
+
+GoToAngle:
+	LOAD	DD
+	CALL 	AngleCap
+	STORE	DTheta		;make robot go to input angle
+	
+GoToAngleTest:			;keep looping until angle is correct
+	CALL	GetThetaError
+	CALL	Abs
+	ADDI	-5
+	JPOS	GoToAngleTest
+	
+	RETURN
+	
+;***************************************************************
+;AngleCap
+;
+;AngleCap takes the value in the AC and maps it to the range of
+;0 to 359 by adding/subtracting 360. 
+;TO USE: Call with the value in the AC
+;***************************************************************
+AngleCap:
+	;assume angle is positive
+	ADDI	-360
+	JNEG	AngleIsNeg
+	JUMP 	AngleCap
+	
+AngleIsNeg:
+	ADDI	360
+	JNEG	AngleIsNeg
+	
+	RETURN
+	
+	
+	
+	
 	
 	
 ;***************************************************************
@@ -807,8 +910,9 @@ I2CRCmd:  DW &H0190    ; write nothing, read one byte, addr 0x90
 
 ; our variables
 
-
+;**********************************************************************
 ;Remote Control Buttons
+;**********************************************************************
 
 REM_1:		DW	&B0010000011011111
 REM_2:		DW	&B1010000001011111
