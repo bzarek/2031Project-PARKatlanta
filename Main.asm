@@ -274,7 +274,7 @@ RotateByDD:
 	STORE	DTheta		;make robot turn to that angle
 	
 RotateByDDTest:			;keep looping until angle is correct
-	CALL	GetThetaError
+	CALL	GetThetaErr
 	CALL	Abs
 	ADDI	-5
 	JPOS	RotateByDDTest
@@ -294,7 +294,7 @@ GoToAngle:
 	STORE	DTheta		;make robot go to input angle
 	
 GoToAngleTest:			;keep looping until angle is correct
-	CALL	GetThetaError
+	CALL	GetThetaErr
 	CALL	Abs
 	ADDI	-5
 	JPOS	GoToAngleTest
