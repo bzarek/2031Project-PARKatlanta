@@ -85,7 +85,38 @@ START:
 	SUB		REM_0
 	JZERO 	Manual
 	
+	IN 		IR_LO	
+	SUB		REM_1
+	JZERO 	SubroutineTest
+	
 	JUMP 	START
+	
+SubroutineTest:
+	;move about a meter forward
+	LOADI	1000
+	STORE	XX
+	LOADI	300
+	STORE	VV
+	CALL	MoveXX
+	
+	;rotate by 45 degrees
+	LOADI 	-45
+	STORE 	DD
+	CALL	RotateByDD
+	
+	;move about a half meter forward
+	LOADI	500
+	STORE	XX
+	LOADI	300
+	STORE	VV
+	CALL	MoveXX
+	
+	;test parallel park
+	CALL 	ParallelPark
+	
+	;test perpendicular park
+	CALL	PerpPark
+	
 
 
 Manual:
@@ -221,6 +252,7 @@ Forever:
 ; Timer ISR.  Currently just calls the movement control code.
 ; You could, however, do additional tasks here if desired.
 CTimer_ISR:
+	CALL	IRDisp
 	CALL   ControlMovement
 	RETI   ; return from ISR
 	
