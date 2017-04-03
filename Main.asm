@@ -87,19 +87,39 @@ START:
 	
 	IN 		IR_LO	
 	SUB		REM_1
-	JZERO 	SubroutineTest
+	JZERO 	Autonomous
+	
+	IN 		IR_LO	
+	SUB		REM_2
+	JZERO 	Autonomous
+	
+	IN 		IR_LO	
+	SUB		REM_3
+	JZERO 	Autonomous
+	
+	IN 		IR_LO	
+	SUB		REM_4
+	JZERO 	Autonomous
+	
+	IN 		IR_LO	
+	SUB		REM_5
+	JZERO 	Autonomous
+	
+	IN 		IR_LO	
+	SUB		REM_6
+	JZERO 	Autonomous
+	
+	IN 		IR_LO	
+	SUB		REM_7
+	JZERO 	Autonomous
 	
 	JUMP 	START
-	
-SubroutineTest:
-	CALL	ParallelPark
 
+Autonomous:
+	CALL 	AutoPark
 
 Manual:
-	IN 		THETA		;Stop movement
-	STORE	DTheta
-	LOAD	Zero
-	STORE 	DVel
+	CALL	StopMovement
 
 	IN		IR_LO		;Go to Forward if play button is pressed
 	SUB		REM_PLAY
@@ -365,6 +385,8 @@ ParallelPark:
 	STORE	DD
 	CALL	RotateByDD
 	
+	CALL	StopMovement
+	
 	RETURN
 	
 ;***************************************************************
@@ -387,8 +409,135 @@ PerpPark:
 	STORE 	VV
 	CALL	MoveXX
 	
+	Call	StopMovement
+	
 	RETURN
 	
+;***************************************************************
+;SpaceSelect
+;
+;SpaceSelect stores a correct distance in DIST_Current based on 
+;the number pressed on the remote. 
+;TO USE: CALL after a number has been pressed.
+;***************************************************************
+
+;Check which button is pressed
+	IN		IR_LO
+	SUB		REM_1
+	JZERO	B1
+	
+	IN		IR_LO
+	SUB		REM_2
+	JZERO	B2
+	
+	IN		IR_LO
+	SUB		REM_3
+	JZERO	B3
+	
+	IN		IR_LO
+	SUB		REM_4
+	JZERO	B4
+	
+	IN		IR_LO
+	SUB		REM_5
+	JZERO	B5
+	
+	IN		IR_LO
+	SUB		REM_6
+	JZERO	B6
+	
+	IN		IR_LO
+	SUB		REM_7
+	JZERO	B7
+	
+B1:	LOAD	DIST_1
+	STORE	DIST_Current
+	RETURN
+	
+B1:	LOAD	DIST_2
+	STORE	DIST_Current
+	RETURN
+	
+B1:	LOAD	DIST_3
+	STORE	DIST_Current
+	RETURN
+	
+B1:	LOAD	DIST_4
+	STORE	DIST_Current
+	RETURN
+	
+B1:	LOAD	DIST_5
+	STORE	DIST_Current
+	RETURN
+	
+B1:	LOAD	DIST_6
+	STORE	DIST_Current
+	RETURN
+	
+B1:	LOAD	DIST_7
+	STORE	DIST_Current
+	RETURN
+	
+	
+;***************************************************************
+;AutoPark
+;
+;PerpPark executes fully autonomous parking. 
+;TO USE: CALL after a number has been pressed.
+;***************************************************************
+
+;pick value based on input
+	CALL	SpaceSelect		;store distance for later
+
+;Move Forward
+	LOADI	400
+	STORE	XX
+	LOADI	150
+	STORE 	VV
+	CALL	MoveXX
+	
+;Rotate 90 Degrees
+	LOADI	-90
+	STORE	DD
+	CALL	RotateByDD
+	
+;Move Forward
+	LOADI	800
+	STORE	XX
+	LOADI	150
+	STORE 	VV
+	CALL	MoveXX
+	
+;Rotate 90 Degrees
+	LOADI	90
+	STORE	DD
+	CALL	RotateByDD
+	
+;Move Forward (distance calculated by SpaceSelect
+	LOAD	DIST_Current
+	STORE	XX
+	LOADI	150
+	STORE 	VV
+	CALL	MoveXX
+	
+;Execute Perpendicular Park maneuver
+	CALL	PerpPark
+	
+	RETURN
+	
+;***************************************************************
+;StopMovement
+;
+;StopMovement stops the robot from moving and rotating
+;***************************************************************
+
+	IN 		THETA		;Stop movement
+	STORE	DTheta
+	LOAD	Zero
+	STORE 	DVel
+	
+	RETURN
+
 ;***************************************************************
 ;AngleCap
 ;
@@ -1020,6 +1169,19 @@ REM_PAUSE:	DW	&B1000100001110111
 REM_STOP:	DW	&B0000100011110111
 REM_PREV:	DW	&HC23D
 REM_MUTE:	DW 	&H906F
+
+;**********************************************************************
+;Distance constants
+;**********************************************************************
+
+DIST_1:		DW	1750
+DIST_2:		DW	1500
+DIST_3:		DW	1250
+DIST_4:		DW	1000
+DIST_5:		DW	750
+DIST_6:		DW	500
+DIST_7:		DW	250
+DIST_Current:	DW 	0
 
 
 ;***************************************************************
