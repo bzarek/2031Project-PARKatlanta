@@ -92,36 +92,10 @@ START:
 	JUMP 	START
 	
 SubroutineTest:
-	;move about a meter forward
-	LOADI	1000
-	STORE	XX
-	LOADI	300
-	STORE	VV
-	CALL	MoveXX
-	
-	;rotate by 45 degrees
-	LOADI 	-45
-	STORE 	DD
-	CALL	RotateByDD
-	
-	;move about a half meter forward
-	LOADI	500
-	STORE	XX
-	LOADI	300
-	STORE	VV
-	CALL	MoveXX
-	
-	;test parallel park
-	CALL 	ParallelPark
-	
-	;test perpendicular park
-	CALL	PerpPark
-	
+	CALL	ParallelPark
 
 
 Manual:
-	CALL 	IRDisp
-	
 	IN 		THETA		;Stop movement
 	STORE	DTheta
 	LOAD	Zero
@@ -143,6 +117,14 @@ Manual:
 	SUB		REM_FF
 	JZERO	TurnRight
 	
+	IN		IR_LO		;Parallel Park
+	SUB		REM_MUTE
+	JZERO	P1
+	
+	IN		IR_LO		;Perp Park
+	SUB		REM_PREV
+	JZERO	P2
+	
 	JUMP 	Manual		;If none of these are pressed, keep checking
 	
 Forward:
@@ -150,7 +132,7 @@ Forward:
 	
 	IN 		THETA		;keep angle the same
 	STORE	DTheta
-	LOAD	FMid		;move forward
+	LOADI	200			;move forward
 	STORE 	DVel
 	
 	In 		IR_LO		;check if robot should stop
@@ -163,7 +145,7 @@ Reverse:
 	
 	IN 		THETA		;keep angle the same
 	STORE	DTheta
-	LOAD	RMid		;move backward
+	LOADI	-200			;move backward
 	STORE 	DVel
 	
 	IN 		IR_LO		;check if robot should stop
@@ -225,7 +207,16 @@ TurnLeftLoop:
 	STORE 	DTheta		;store corrected value
 	
 	JUMP 	TurnLeftLoop	;otherwise, keep turning
+
+P1:
+	CALL	ParallelPark
+	OUT		IR_HI		;clear command
+	JUMP	Manual
 	
+P2:
+	CALL	PerpPark
+	OUT		IR_HI		;clear command
+	JUMP 	Manual
 
 
 	
@@ -357,25 +348,22 @@ GoToAngleTest:			;keep looping until angle is correct
 ;***************************************************************
 
 ParallelPark:
-	LOAD	RMid
-	STORE	VV
-	LOAD	HalfMeter
+	;Rotate 90 Degrees
+	LOADI	-90
+	STORE	DD
+	CALL	RotateByDD
+	
+	;Move Forward
+	LOADI	250
 	STORE	XX
-	
-	IN		THETA
-	ADDI	45			;rotate counterclockwise
-	STORE	DTheta
-	
+	LOADI	150
+	STORE 	VV
 	CALL	MoveXX
 	
-	IN		THETA		;rotate back
-	ADDI	-45
-	STORE	45
-	
-	LOADI	100
-	STORE	XX
-	
-	CALL	MoveXX
+	;Rotate back
+	LOADI	90
+	STORE	DD
+	CALL	RotateByDD
 	
 	RETURN
 	
@@ -388,14 +376,14 @@ ParallelPark:
 
 PerpPark:
 	;Rotate 90 Degrees
-	LOADI	90
+	LOADI	-90
 	STORE	DD
 	CALL	RotateByDD
 	
-	;Back Up
-	LOAD	HalfMeter
+	;Move Forward
+	LOADI	400
 	STORE	XX
-	LOAD	RMid
+	LOADI	150
 	STORE 	VV
 	CALL	MoveXX
 	
@@ -1030,6 +1018,8 @@ REM_PLAY:	DW	&B0010100011010111
 REM_FF:		DW	&B1100100000110111
 REM_PAUSE:	DW	&B1000100001110111
 REM_STOP:	DW	&B0000100011110111
+REM_PREV:	DW	&HC23D
+REM_MUTE:	DW 	&H906F
 
 
 ;***************************************************************
