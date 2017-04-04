@@ -196,7 +196,6 @@ Reverse:
 	JUMP 	Reverse		;otherwise, keep moving backward
 	
 TurnRight:
-	
 	IN 		IR_LO		;check if robot should stop
 	SUB		REM_STOP	
 	JZERO	Manual		;go back to manual if so
@@ -216,7 +215,6 @@ TurnRight:
 	JUMP 	TurnRight	;otherwise, keep turning
 	
 TurnLeft:
-	
 	IN 		IR_LO		;check if robot should stop
 	SUB		REM_STOP	
 	JZERO	Manual		;go back to manual if so
@@ -271,7 +269,13 @@ Forever:
 ; You could, however, do additional tasks here if desired.
 CTimer_ISR:
 	CALL	IRDisp
-	CALL   ControlMovement
+	CALL	ControlMovement
+	
+	;stop movement and return to manual if power button is pressed
+	IN		IR_LO
+	SUB		REM_PWR
+	JZERO	Manual
+	
 	RETI   ; return from ISR
 	
 
