@@ -226,14 +226,14 @@ TurnLeft:
 	CALL 	Abs
 	ADDI	-7
 	
-	JPOS	TurnRight
+	JPOS	TurnLeft
 	
 	IN		THETA
 	ADDI	20			;add 20 to THETA
 	CALL 	AngleCap	;put angle in range
 	STORE 	DTheta		;store corrected value
 	
-	JUMP 	TurnRight	;otherwise, keep turning
+	JUMP 	TurnLeft	;otherwise, keep turning
 
 P1:
 	CALL	ParallelPark
