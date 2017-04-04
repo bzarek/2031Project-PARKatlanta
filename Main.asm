@@ -61,7 +61,7 @@ WaitForUser:
 ;***************************************************************
 Main:
 	OUT    RESETPOS    ; reset odometer in case wheels moved after programming
-	
+	OUT		IR_HI		; reset IR code
 	; Before enabling the movement control code, set it to
 	; not start moving immediately.
 	LOADI  0
@@ -150,15 +150,39 @@ Manual:
 Forward:
 	CALL 	IRDisp
 	
-	IN 		THETA		;keep angle the same
-	STORE	DTheta
 	LOADI	200			;move forward
 	STORE 	DVel
 	
 	In 		IR_LO		;check if robot should stop
 	SUB		REM_STOP	
 	JZERO	Manual		;go back to manual if so
+	
+	In 		IR_LO		;check if robot should stop
+	SUB		REM_REW	
+	JZERO	NudgeLeft1	;go back to manual if so
+	
+	In 		IR_LO		;check if robot should stop
+	SUB		REM_FF	
+	JZERO	NudgeRight1	;go back to manual if so
+	
 	JUMP 	Forward		;otherwise, keep moving forward
+	
+NudgeLeft1:
+	IN		THETA
+	ADDI	5
+	CALL	AngleCap
+	STORE	DTheta
+	OUT		IR_HI
+	JUMP 	Forward
+
+NudgeRight1:
+	IN		THETA
+	ADDI	-5
+	CALL	AngleCap
+	STORE	DTheta
+	OUT		IR_HI
+	JUMP 	Forward
+
 	
 Reverse:
 	CALL 	IRDisp
@@ -180,7 +204,6 @@ TurnRight:
 	STORE	DTheta
 	
 TurnRightLoop:
-	CALL 	IRDisp
 	
 	;Loop back if not within 7 degrees
 	CALL 	GetThetaErr
@@ -208,7 +231,6 @@ TurnLeft:
 	STORE	DTheta
 
 TurnLeftLoop:
-	CALL 	IRDisp
 	
 	;Loop back if not within 7 degrees
 	CALL 	GetThetaErr
@@ -420,6 +442,7 @@ PerpPark:
 ;the number pressed on the remote. 
 ;TO USE: CALL after a number has been pressed.
 ;***************************************************************
+SpaceSelect:
 
 ;Check which button is pressed
 	IN		IR_LO
@@ -454,27 +477,27 @@ B1:	LOAD	DIST_1
 	STORE	DIST_Current
 	RETURN
 	
-B1:	LOAD	DIST_2
+B2:	LOAD	DIST_2
 	STORE	DIST_Current
 	RETURN
 	
-B1:	LOAD	DIST_3
+B3:	LOAD	DIST_3
 	STORE	DIST_Current
 	RETURN
 	
-B1:	LOAD	DIST_4
+B4:	LOAD	DIST_4
 	STORE	DIST_Current
 	RETURN
 	
-B1:	LOAD	DIST_5
+B5:	LOAD	DIST_5
 	STORE	DIST_Current
 	RETURN
 	
-B1:	LOAD	DIST_6
+B6:	LOAD	DIST_6
 	STORE	DIST_Current
 	RETURN
 	
-B1:	LOAD	DIST_7
+B7:	LOAD	DIST_7
 	STORE	DIST_Current
 	RETURN
 	
@@ -485,6 +508,7 @@ B1:	LOAD	DIST_7
 ;PerpPark executes fully autonomous parking. 
 ;TO USE: CALL after a number has been pressed.
 ;***************************************************************
+AutoPark:
 
 ;pick value based on input
 	CALL	SpaceSelect		;store distance for later
@@ -502,14 +526,14 @@ B1:	LOAD	DIST_7
 	CALL	RotateByDD
 	
 ;Move Forward
-	LOADI	800
+	LOADI	900
 	STORE	XX
 	LOADI	150
 	STORE 	VV
 	CALL	MoveXX
 	
 ;Rotate 90 Degrees
-	LOADI	90
+	LOADI	88
 	STORE	DD
 	CALL	RotateByDD
 	
@@ -530,6 +554,7 @@ B1:	LOAD	DIST_7
 ;
 ;StopMovement stops the robot from moving and rotating
 ;***************************************************************
+StopMovement:
 
 	IN 		THETA		;Stop movement
 	STORE	DTheta
@@ -1167,20 +1192,20 @@ REM_PLAY:	DW	&B0010100011010111
 REM_FF:		DW	&B1100100000110111
 REM_PAUSE:	DW	&B1000100001110111
 REM_STOP:	DW	&B0000100011110111
-REM_PREV:	DW	&HC23D
+REM_PREV:	DW	&H42BD
 REM_MUTE:	DW 	&H906F
 
 ;**********************************************************************
 ;Distance constants
 ;**********************************************************************
 
-DIST_1:		DW	1750
-DIST_2:		DW	1500
-DIST_3:		DW	1250
-DIST_4:		DW	1000
-DIST_5:		DW	750
-DIST_6:		DW	500
-DIST_7:		DW	250
+DIST_1:		DW	2500
+DIST_2:		DW	2150
+DIST_3:		DW	1800
+DIST_4:		DW	1450
+DIST_5:		DW	1100
+DIST_6:		DW	750
+DIST_7:		DW	400
 DIST_Current:	DW 	0
 
 
