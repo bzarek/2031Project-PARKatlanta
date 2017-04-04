@@ -147,41 +147,39 @@ Manual:
 	
 	JUMP 	Manual		;If none of these are pressed, keep checking
 	
-Forward:
-	CALL 	IRDisp
-	
+Forward:	
 	LOADI	200			;move forward
 	STORE 	DVel
 	
-	In 		IR_LO		;check if robot should stop
+	IN 		IR_LO		;check if robot should stop
 	SUB		REM_STOP	
 	JZERO	Manual		;go back to manual if so
 	
 	In 		IR_LO		;check if robot should stop
 	SUB		REM_REW	
-	JZERO	NudgeLeft1	;go back to manual if so
+	JZERO	NudgeLeft	;go back to manual if so
 	
-	In 		IR_LO		;check if robot should stop
+	IN 		IR_LO		;check if robot should stop
 	SUB		REM_FF	
-	JZERO	NudgeRight1	;go back to manual if so
+	JZERO	NudgeRight	;go back to manual if so
 	
 	JUMP 	Forward		;otherwise, keep moving forward
 	
-NudgeLeft1:
+NudgeLeft:
 	IN		THETA
-	ADDI	5
+	ADDI	5			;adjust angle by 5 degrees
 	CALL	AngleCap
 	STORE	DTheta
-	OUT		IR_HI
-	JUMP 	Forward
+	OUT		IR_HI		;clear command so this doesn't repeat
+	JUMP 	Forward		;keep moving forward
 
-NudgeRight1:
+NudgeRight:
 	IN		THETA
-	ADDI	-5
+	ADDI	-5			;adjust angle by 5 degrees
 	CALL	AngleCap
 	STORE	DTheta
-	OUT		IR_HI
-	JUMP 	Forward
+	OUT		IR_HI		;clear command so this doesn't repeat
+	JUMP 	Forward		;keep moving forward
 
 	
 Reverse:
@@ -198,57 +196,44 @@ Reverse:
 	JUMP 	Reverse		;otherwise, keep moving backward
 	
 TurnRight:
-	LOAD	Zero		;stop forward/backward movement
-	STORE 	DVel	
-	IN 		THETA
-	STORE	DTheta
 	
-TurnRightLoop:
+	IN 		IR_LO		;check if robot should stop
+	SUB		REM_STOP	
+	JZERO	Manual		;go back to manual if so
 	
 	;Loop back if not within 7 degrees
 	CALL 	GetThetaErr
 	CALL 	Abs
 	ADDI	-7
 	
-	IN 		IR_LO		;check if robot should stop
-	SUB		REM_STOP	
-	JZERO	Manual		;go back to manual if so
-	
-	JPOS	TurnRightLoop
+	JPOS	TurnRight
 	
 	IN		THETA
 	ADDI	-20			;subtract 20 from THETA
 	CALL 	AngleCap	;put angle in range
 	STORE 	DTheta		;store corrected value
 	
-	
-	JUMP 	TurnRightLoop	;otherwise, keep turning
+	JUMP 	TurnRight	;otherwise, keep turning
 	
 TurnLeft:
-	LOAD	Zero		;stop forward/backward movement
-	STORE 	DVel		
-	IN		THETA
-	STORE	DTheta
-
-TurnLeftLoop:
+	
+	IN 		IR_LO		;check if robot should stop
+	SUB		REM_STOP	
+	JZERO	Manual		;go back to manual if so
 	
 	;Loop back if not within 7 degrees
 	CALL 	GetThetaErr
 	CALL 	Abs
 	ADDI	-7
 	
-	IN 		IR_LO		;check if robot should stop
-	SUB		REM_STOP	
-	JZERO	Manual		;go back to manual if so
-	
-	JPOS	TurnLeftLoop 	;otherwise, keep turning
+	JPOS	TurnRight
 	
 	IN		THETA
 	ADDI	20			;add 20 to THETA
-	CALL	AngleCap	;put angle in range
+	CALL 	AngleCap	;put angle in range
 	STORE 	DTheta		;store corrected value
 	
-	JUMP 	TurnLeftLoop	;otherwise, keep turning
+	JUMP 	TurnRight	;otherwise, keep turning
 
 P1:
 	CALL	ParallelPark
