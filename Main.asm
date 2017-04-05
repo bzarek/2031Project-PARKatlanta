@@ -117,7 +117,18 @@ START:
 	SUB		REM_8
 	JZERO 	SonarTest
 	
+	IN 		IR_LO	
+	SUB		REM_9
+	JZERO 	SoundTest
+	
 	JUMP 	START
+	
+SoundTest:
+	LOADI	&H0410
+	OUT		BEEP
+	
+	LOADI	&H0418
+	OUT		BEEP
 	
 SonarTest:
 	;enable sonar sensor 0
