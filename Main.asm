@@ -430,6 +430,70 @@ ParallelPark:
 	RETURN
 	
 ;***************************************************************
+;ParallelParkWithSonar
+;
+;ParallelParkWithSonar executes a parallel park maneuver assuming the 
+;DE2Bot is in position
+;***************************************************************
+
+ParallelParkWithSonar:
+	;enable sonar sensor 5
+	LOADI	&B00100000
+	OUT		SONAREN
+	
+	;read value, store it in temp
+	IN		DIST5
+	STORE	Temp
+	
+	;disable sonar sensors
+	LOAD	Zero
+	OUT 	SONAREN
+
+	;Rotate 90 Degrees
+	LOADI	-90
+	STORE	DD
+	CALL	RotateByDD
+	
+	;Adjust position based on sensor reading:
+	
+	;check for invalid reading
+	LOADI	250		;default distance
+	STORE	XX		
+	LOAD	Temp
+	SUB		NegOne	;check if valid reading or not
+	JZERO	MoveIntoParallelSpace	;no adjustment if invalid reading
+	
+	;get adjustment distance
+	LOADI 	35		;Distance it should be from the wall
+	SUB		Temp	;Subtract actual distance from wall
+	
+	;multiply by 10 (conversion to mm)
+	STORE	m16sA	
+	LOADI	10
+	STORE	m16sB
+	CALL	Mult16s
+	
+	;store adjusted distance in XX
+	LOAD	mres16sL
+	ADD		250		;base distance
+	STORE	XX
+	
+MoveIntoParallelSpace:
+	;Move Forward
+	LOADI	150
+	STORE 	VV
+	CALL	MoveXX
+	
+	;Rotate back
+	LOADI	90
+	STORE	DD
+	CALL	RotateByDD
+	
+	CALL	StopMovement
+	
+	RETURN
+	
+;***************************************************************
 ;PerpPark
 ;
 ;PerpPark executes a perpendicular park maneuver assuming the 
@@ -445,6 +509,66 @@ PerpPark:
 	;Move Forward
 	LOADI	400
 	STORE	XX
+	LOADI	150
+	STORE 	VV
+	CALL	MoveXX
+	
+	Call	StopMovement
+	
+	RETURN
+	
+;***************************************************************
+;PerpParkWithSonar
+;
+;PerpParkWithSonar executes a perpendicular park maneuver assuming the 
+;DE2Bot is in position. It varies the distance it travels into the space
+;based on the distance from the left wall.
+;***************************************************************
+
+PerpParkWithSonar:
+	;enable sonar sensor 1
+	LOADI	&B00000001
+	OUT		SONAREN
+	
+	;read value, store it in temp
+	IN		DIST0
+	STORE	Temp
+	
+	;disable sonar sensors
+	LOAD	Zero
+	OUT 	SONAREN
+
+	;Rotate 90 Degrees
+	LOADI	-90
+	STORE	DD
+	CALL	RotateByDD
+	
+	;Adjust position based on sensor reading:
+	
+	;check for invalid reading
+	LOADI	400		;default distance
+	STORE	XX		
+	LOAD	Temp
+	SUB		NegOne	;check if valid reading or not
+	JZERO	MoveIntoPerpSpace	;no adjustment if invalid reading
+	
+	;get adjustment distance
+	LOADI 	30		;Distance it should be from the wall
+	SUB		Temp	;Subtract actual distance from wall
+	
+	;multiply by 10 (conversion to mm)
+	STORE	m16sA	
+	LOADI	10
+	STORE	m16sB
+	CALL	Mult16s
+	
+	;store adjusted distance in XX
+	LOAD	mres16sL
+	ADD		400		;base distance
+	STORE	XX
+	
+MoveIntoPerpSpace:
+	;Move Forward (XX already given value)
 	LOADI	150
 	STORE 	VV
 	CALL	MoveXX
@@ -565,7 +689,7 @@ AutoPark:
 	;STORE	DD
 	;CALL	RotateByDD
 	
-;Move Forward (distance calculated by SpaceSelect
+;Move Forward (distance calculated by SpaceSelect)
 	LOAD	DIST_Current
 	STORE	XX
 	LOADI	150
@@ -1185,6 +1309,7 @@ Mask4:    DW &B00010000
 Mask5:    DW &B00100000
 Mask6:    DW &B01000000
 Mask7:    DW &B10000000
+
 LowByte:  DW &HFF      ; binary 00000000 11111111
 LowNibl:  DW &HF       ; 0000 0000 0000 1111
 
