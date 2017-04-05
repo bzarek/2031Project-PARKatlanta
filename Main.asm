@@ -123,13 +123,6 @@ START:
 	
 	JUMP 	START
 	
-SoundTest:
-	LOADI	&H0410
-	OUT		BEEP
-	
-	LOADI	&H0418
-	OUT		BEEP
-	
 SonarTest:
 	;enable sonar sensor 0
 	LOADI	&B00000001
@@ -143,6 +136,13 @@ SonarTest:
 
 Autonomous:
 	CALL 	AutoPark
+	
+SoundTest:
+	LOADI	&H0410
+	OUT		BEEP
+	
+	LOADI	&H0418
+	OUT		BEEP
 
 Manual:
 	CALL	StopMovement
@@ -291,10 +291,13 @@ Forever:
 	DEAD:  DW &HDEAD   ; Example of a "local" variable
 
 
-; Timer ISR.  Currently just calls the movement control code.
-; You could, however, do additional tasks here if desired.
+; Timer ISR. Displays the sonar reading from sensor 0 on the
+; first seven segment display and displays the IR code on the 
+; second. Also calls ControlMovement and includes a check for 
+; the power button: returns to Manual if power is pressed.
 CTimer_ISR:
 	CALL	IRDisp
+	CALL	SONARDisp
 	CALL	ControlMovement
 	
 	;stop movement and return to manual if power button is pressed
@@ -607,7 +610,16 @@ AngleIsNeg:
 	
 	RETURN
 	
+SONARDisp:
+	;enable sonar sensor 0
+	LOADI	&B00000001
+	OUT		SONAREN
 	
+	;display value of sensor 0
+	IN		DIST0
+	OUT		SSEG1
+	
+	RETURN
 	
 	
 	
