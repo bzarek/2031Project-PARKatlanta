@@ -124,15 +124,8 @@ START:
 	JUMP 	START
 	
 SonarTest:
-	;enable sonar sensor 0
-	LOADI	&B00000001
-	OUT		SONAREN
-	
-	;display value of sensor 0
-	IN		DIST0
-	OUT		SSEG1
-	
-	JUMP	SonarTest
+	CALL	PerpParkWithSonar
+	JUMP	Manual
 
 Autonomous:
 	CALL 	AutoPark
@@ -578,6 +571,81 @@ MoveIntoPerpSpace:
 	RETURN
 	
 ;***************************************************************
+;MoveXXByWall
+;
+;MoveXXByWall causes the robot to move forward or backward by the 
+;number of units stored in XX. 1 unit = 1.04 mm. This version of
+;the function will take in an initial reading from the left sonar
+;sensor and make sure the robot does not go within 3 cm of that 
+;value.
+;TO USE: Store distance in XX and velocity in VV, 
+;then call function. MUST BE NEXT TO WALL
+;***************************************************************
+
+MoveXXByWall:
+	;set velocity 
+	LOAD	VV
+	STORE 	DVel
+	
+	;Store current position of robot
+	IN 		XPOS
+	STORE	PrevX
+	IN 		YPOS
+	STORE 	PrevY
+	
+	;Store initial distance from left wall:
+	;enable sonar sensor 1
+	LOADI	&B00000001
+	OUT		SONAREN
+	
+	;read value, store it in temp
+	IN		DIST0
+	STORE	Temp
+	
+MoveXXByWallTest: ;continuously check how far it has traveled
+	;check proximity to wall
+	IN		DIST0	;get current distance
+	SUB		Temp	;subtract initial distance
+	ADDI	2		;add buffer
+	JNEG	CorrectRight
+	ADDI	-4		;equivalent to adding -2 to DIST0-Temp
+	JPOS	CorrectLeft
+	JUMP	NoCorrection
+	
+CorrectRight:
+	LOADI	-5
+	STORE	DD
+	CALL	RotateByDD
+	JUMP	NoCorrection
+	
+CorrectLeft:
+	LOADI	5
+	STORE	DD
+	CALL	RotateByDD
+	
+NoCorrection:
+	IN		XPOS
+	SUB		PrevX
+	CALL	Abs
+	STORE	L2X
+	IN		YPOS
+	SUB		PrevY
+	CALL	Abs
+	STORE	L2Y
+	
+	CALL	L2Estimate
+	CALL	Abs
+	
+	SUB		XX		;check if it has gone far enough
+	JNEG	MoveXXByWallTest
+	
+	;has gone far enough so STOP
+	Load 	Zero
+	STORE	DVel
+	
+	RETURN 
+	
+;***************************************************************
 ;SpaceSelect
 ;
 ;SpaceSelect stores a correct distance in DIST_Current based on 
@@ -664,7 +732,7 @@ AutoPark:
 	
 ;Rotate 90 Degrees (using GoToAngle)
 	LOADI	270
-	Store	DD
+	STORE	DD
 	CALL	GoToAngle
 	
 ;Rotate 90 Degrees
