@@ -12,7 +12,7 @@ CONTENT
 
            000 : 2805;  -- 	JUMP   Init        ; Reset vector
            001 : B000;  -- 	RETI               ; Sonar interrupt (unused)
-           002 : 28AB;  -- 	JUMP   CTimer_ISR  ; Timer interrupt
+           002 : 28AA;  -- 	JUMP   CTimer_ISR  ; Timer interrupt
            003 : B000;  -- 	RETI               ; UART interrupt (unused)
            004 : B000;  -- 	RETI               ; Motor stall interrupt (unused)
            005 : 0AAD;  -- 	LOAD   Zero
@@ -54,281 +54,281 @@ CONTENT
            029 : A802;  -- 	SEI    &B0010      ; enable interrupts from source 2 (timer)
            02A : 90D1;  -- 	IN 		IR_LO	
            02B : 22DB;  -- 	SUB		REM_0
-           02C : 4044;  -- 	JZERO 	Manual
+           02C : 404C;  -- 	JZERO 	Manual
            02D : 90D1;  -- 	IN 		IR_LO	
            02E : 22D2;  -- 	SUB		REM_1
-           02F : 4043;  -- 	JZERO 	Autonomous
+           02F : 404B;  -- 	JZERO 	Autonomous
            030 : 90D1;  -- 	IN 		IR_LO	
            031 : 22D3;  -- 	SUB		REM_2
-           032 : 4043;  -- 	JZERO 	Autonomous
+           032 : 404B;  -- 	JZERO 	Autonomous
            033 : 90D1;  -- 	IN 		IR_LO	
            034 : 22D4;  -- 	SUB		REM_3
-           035 : 4043;  -- 	JZERO 	Autonomous
+           035 : 404B;  -- 	JZERO 	Autonomous
            036 : 90D1;  -- 	IN 		IR_LO	
            037 : 22D5;  -- 	SUB		REM_4
-           038 : 4043;  -- 	JZERO 	Autonomous
+           038 : 404B;  -- 	JZERO 	Autonomous
            039 : 90D1;  -- 	IN 		IR_LO	
            03A : 22D6;  -- 	SUB		REM_5
-           03B : 4043;  -- 	JZERO 	Autonomous
+           03B : 404B;  -- 	JZERO 	Autonomous
            03C : 90D1;  -- 	IN 		IR_LO	
            03D : 22D7;  -- 	SUB		REM_6
-           03E : 4043;  -- 	JZERO 	Autonomous
+           03E : 404B;  -- 	JZERO 	Autonomous
            03F : 90D1;  -- 	IN 		IR_LO	
            040 : 22D8;  -- 	SUB		REM_7
-           041 : 4043;  -- 	JZERO 	Autonomous
-           042 : 282A;  -- 	JUMP 	START
-           043 : 811A;  -- 	CALL 	AutoPark
-           044 : 8132;  -- 	CALL	StopMovement
-           045 : 90D1;  -- 	IN		IR_LO		;Go to Forward if play button is pressed
-           046 : 22DE;  -- 	SUB		REM_PLAY
-           047 : 4058;  -- 	JZERO 	Forward
-           048 : 90D1;  -- 	IN		IR_LO		;Go to Reverse if pause button is pressed
-           049 : 22E0;  -- 	SUB		REM_PAUSE
-           04A : 4071;  -- 	JZERO	Reverse
-           04B : 90D1;  -- 	IN		IR_LO		;Go to TurnLeft if rewind button is pressed
-           04C : 22DD;  -- 	SUB		REM_REW
-           04D : 408A;  -- 	JZERO	TurnLeft
-           04E : 90D1;  -- 	IN		IR_LO		;Go to TurnRight if fast forward button is pressed
-           04F : 22DF;  -- 	SUB		REM_FF
-           050 : 407A;  -- 	JZERO	TurnRight
-           051 : 90D1;  -- 	IN		IR_LO		;Parallel Park
-           052 : 22E3;  -- 	SUB		REM_MUTE
-           053 : 409A;  -- 	JZERO	P1
-           054 : 90D1;  -- 	IN		IR_LO		;Perp Park
-           055 : 22E2;  -- 	SUB		REM_PREV
-           056 : 409D;  -- 	JZERO	P2
-           057 : 2844;  -- 	JUMP 	Manual		;If none of these are pressed, keep checking
-           058 : 813D;  -- 	CALL 	IRDisp
-           059 : B8C8;  -- 	LOADI	200			;move forward
-           05A : 1157;  -- 	STORE 	DVel
-           05B : 90D1;  -- 	In 		IR_LO		;check if robot should stop
-           05C : 22E1;  -- 	SUB		REM_STOP	
-           05D : 4044;  -- 	JZERO	Manual		;go back to manual if so
-           05E : 90D1;  -- 	In 		IR_LO		;check if robot should stop
-           05F : 22DD;  -- 	SUB		REM_REW	
-           060 : 4065;  -- 	JZERO	NudgeLeft1	;go back to manual if so
-           061 : 90D1;  -- 	In 		IR_LO		;check if robot should stop
-           062 : 22DF;  -- 	SUB		REM_FF	
-           063 : 406B;  -- 	JZERO	NudgeRight1	;go back to manual if so
-           064 : 2858;  -- 	JUMP 	Forward		;otherwise, keep moving forward
-           065 : 90C2;  -- 	IN		THETA
-           066 : 6805;  -- 	ADDI	5
-           067 : 8137;  -- 	CALL	AngleCap
-           068 : 1156;  -- 	STORE	DTheta
-           069 : 98D0;  -- 	OUT		IR_HI
-           06A : 2858;  -- 	JUMP 	Forward
-           06B : 90C2;  -- 	IN		THETA
-           06C : 6FFB;  -- 	ADDI	-5
-           06D : 8137;  -- 	CALL	AngleCap
-           06E : 1156;  -- 	STORE	DTheta
-           06F : 98D0;  -- 	OUT		IR_HI
-           070 : 2858;  -- 	JUMP 	Forward
-           071 : 813D;  -- 	CALL 	IRDisp
-           072 : 90C2;  -- 	IN 		THETA		;keep angle the same
-           073 : 1156;  -- 	STORE	DTheta
-           074 : BF38;  -- 	LOADI	-200			;move backward
-           075 : 1157;  -- 	STORE 	DVel
-           076 : 90D1;  -- 	IN 		IR_LO		;check if robot should stop
-           077 : 22E1;  -- 	SUB		REM_STOP	
-           078 : 4044;  -- 	JZERO	Manual		;go back to manual if so
-           079 : 2871;  -- 	JUMP 	Reverse		;otherwise, keep moving backward
-           07A : 0AAD;  -- 	LOAD	Zero		;stop forward/backward movement
-           07B : 1157;  -- 	STORE 	DVel	
-           07C : 90C2;  -- 	IN 		THETA
-           07D : 1156;  -- 	STORE	DTheta
-           07E : 8142;  -- 	CALL 	GetThetaErr
-           07F : 8176;  -- 	CALL 	Abs
-           080 : 6FF9;  -- 	ADDI	-7
+           041 : 404B;  -- 	JZERO 	Autonomous
+           042 : 90D1;  -- 	IN 		IR_LO	
+           043 : 22D9;  -- 	SUB		REM_8
+           044 : 4046;  -- 	JZERO 	SonarTest
+           045 : 282A;  -- 	JUMP 	START
+           046 : B801;  -- 	LOADI	&B00000001
+           047 : 98B2;  -- 	OUT		SONAREN
+           048 : 90A8;  -- 	IN		DIST0
+           049 : 9804;  -- 	OUT		SSEG1
+           04A : 2846;  -- 	JUMP	SonarTest
+           04B : 811C;  -- 	CALL 	AutoPark
+           04C : 8134;  -- 	CALL	StopMovement
+           04D : 90D1;  -- 	IN		IR_LO		;Go to Forward if play button is pressed
+           04E : 22DE;  -- 	SUB		REM_PLAY
+           04F : 4060;  -- 	JZERO 	Forward
+           050 : 90D1;  -- 	IN		IR_LO		;Go to Reverse if pause button is pressed
+           051 : 22E0;  -- 	SUB		REM_PAUSE
+           052 : 4078;  -- 	JZERO	Reverse
+           053 : 90D1;  -- 	IN		IR_LO		;Go to TurnLeft if rewind button is pressed
+           054 : 22DD;  -- 	SUB		REM_REW
+           055 : 408D;  -- 	JZERO	TurnLeft
+           056 : 90D1;  -- 	IN		IR_LO		;Go to TurnRight if fast forward button is pressed
+           057 : 22DF;  -- 	SUB		REM_FF
+           058 : 4081;  -- 	JZERO	TurnRight
+           059 : 90D1;  -- 	IN		IR_LO		;Parallel Park
+           05A : 22E3;  -- 	SUB		REM_MUTE
+           05B : 4099;  -- 	JZERO	P1
+           05C : 90D1;  -- 	IN		IR_LO		;Perp Park
+           05D : 22E2;  -- 	SUB		REM_PREV
+           05E : 409C;  -- 	JZERO	P2
+           05F : 284C;  -- 	JUMP 	Manual		;If none of these are pressed, keep checking
+           060 : B8C8;  -- 	LOADI	200			;move forward
+           061 : 1157;  -- 	STORE 	DVel
+           062 : 90D1;  -- 	IN 		IR_LO		;check if robot should stop
+           063 : 22E1;  -- 	SUB		REM_STOP	
+           064 : 404C;  -- 	JZERO	Manual		;go back to manual if so
+           065 : 90D1;  -- 	In 		IR_LO		;check if robot should stop
+           066 : 22DD;  -- 	SUB		REM_REW	
+           067 : 406C;  -- 	JZERO	NudgeLeft	;go back to manual if so
+           068 : 90D1;  -- 	IN 		IR_LO		;check if robot should stop
+           069 : 22DF;  -- 	SUB		REM_FF	
+           06A : 4072;  -- 	JZERO	NudgeRight	;go back to manual if so
+           06B : 2860;  -- 	JUMP 	Forward		;otherwise, keep moving forward
+           06C : 90C2;  -- 	IN		THETA
+           06D : 6805;  -- 	ADDI	5			;adjust angle by 5 degrees
+           06E : 8139;  -- 	CALL	AngleCap
+           06F : 1156;  -- 	STORE	DTheta
+           070 : 98D0;  -- 	OUT		IR_HI		;clear command so this doesn't repeat
+           071 : 2860;  -- 	JUMP 	Forward		;keep moving forward
+           072 : 90C2;  -- 	IN		THETA
+           073 : 6FFB;  -- 	ADDI	-5			;adjust angle by 5 degrees
+           074 : 8139;  -- 	CALL	AngleCap
+           075 : 1156;  -- 	STORE	DTheta
+           076 : 98D0;  -- 	OUT		IR_HI		;clear command so this doesn't repeat
+           077 : 2860;  -- 	JUMP 	Forward		;keep moving forward
+           078 : 813F;  -- 	CALL 	IRDisp
+           079 : 90C2;  -- 	IN 		THETA		;keep angle the same
+           07A : 1156;  -- 	STORE	DTheta
+           07B : BF38;  -- 	LOADI	-200			;move backward
+           07C : 1157;  -- 	STORE 	DVel
+           07D : 90D1;  -- 	IN 		IR_LO		;check if robot should stop
+           07E : 22E1;  -- 	SUB		REM_STOP	
+           07F : 404C;  -- 	JZERO	Manual		;go back to manual if so
+           080 : 2878;  -- 	JUMP 	Reverse		;otherwise, keep moving backward
            081 : 90D1;  -- 	IN 		IR_LO		;check if robot should stop
            082 : 22E1;  -- 	SUB		REM_STOP	
-           083 : 4044;  -- 	JZERO	Manual		;go back to manual if so
-           084 : 387E;  -- 	JPOS	TurnRightLoop
-           085 : 90C2;  -- 	IN		THETA
-           086 : 6FEC;  -- 	ADDI	-20			;subtract 20 from THETA
-           087 : 8137;  -- 	CALL 	AngleCap	;put angle in range
-           088 : 1156;  -- 	STORE 	DTheta		;store corrected value
-           089 : 287E;  -- 	JUMP 	TurnRightLoop	;otherwise, keep turning
-           08A : 0AAD;  -- 	LOAD	Zero		;stop forward/backward movement
-           08B : 1157;  -- 	STORE 	DVel		
-           08C : 90C2;  -- 	IN		THETA
-           08D : 1156;  -- 	STORE	DTheta
-           08E : 8142;  -- 	CALL 	GetThetaErr
-           08F : 8176;  -- 	CALL 	Abs
-           090 : 6FF9;  -- 	ADDI	-7
-           091 : 90D1;  -- 	IN 		IR_LO		;check if robot should stop
-           092 : 22E1;  -- 	SUB		REM_STOP	
-           093 : 4044;  -- 	JZERO	Manual		;go back to manual if so
-           094 : 388E;  -- 	JPOS	TurnLeftLoop 	;otherwise, keep turning
-           095 : 90C2;  -- 	IN		THETA
-           096 : 6814;  -- 	ADDI	20			;add 20 to THETA
-           097 : 8137;  -- 	CALL	AngleCap	;put angle in range
-           098 : 1156;  -- 	STORE 	DTheta		;store corrected value
-           099 : 288E;  -- 	JUMP 	TurnLeftLoop	;otherwise, keep turning
-           09A : 80D9;  -- 	CALL	ParallelPark
-           09B : 98D0;  -- 	OUT		IR_HI		;clear command
-           09C : 2844;  -- 	JUMP	Manual
-           09D : 80E6;  -- 	CALL	PerpPark
-           09E : 98D0;  -- 	OUT		IR_HI		;clear command
-           09F : 2844;  -- 	JUMP 	Manual
-           0A0 : 813D;  -- 	CALL   IRDisp      ; Display the current IR code
-           0A1 : 28A0;  -- 	JUMP   ForeverDisp
-           0A2 : A00F;  -- 	CLI    &B1111      ; disable all interrupts
-           0A3 : 0AAD;  -- 	LOAD   Zero        ; Stop everything.
-           0A4 : 9883;  -- 	OUT    LVELCMD
-           0A5 : 988B;  -- 	OUT    RVELCMD
-           0A6 : 98B2;  -- 	OUT    SONAREN
-           0A7 : 08AA;  -- 	LOAD   DEAD        ; An indication that we are dead
-           0A8 : 9805;  -- 	OUT    SSEG2       ; "dEAd" on the LEDs
-           0A9 : 28A9;  -- 	JUMP   Forever     ; Do this forever.
-           0AA : DEAD;  -- 	DEAD:  DW &HDEAD   ; Example of a "local" variable
-           0AB : 813D;  -- 	CALL	IRDisp
-           0AC : 8158;  -- 	CALL   ControlMovement
-           0AD : B000;  -- 	RETI   ; return from ISR
-           0AE : 0000;  -- XX:		DW	0		;# of cm to move
-           0AF : 0000;  -- VV:		DW	0		;Speed (and direction)
-           0B0 : 0000;  -- PrevX:	DW	0
-           0B1 : 0000;  -- PrevY:	DW	0
-           0B2 : 08AF;  -- 	LOAD	VV
-           0B3 : 1157;  -- 	STORE 	DVel
-           0B4 : 90C0;  -- 	IN 		XPOS
-           0B5 : 10B0;  -- 	STORE	PrevX
-           0B6 : 90C1;  -- 	IN 		YPOS
-           0B7 : 10B1;  -- 	STORE 	PrevY
-           0B8 : 90C0;  -- 	IN		XPOS
-           0B9 : 20B0;  -- 	SUB		PrevX
-           0BA : 8176;  -- 	CALL	Abs
-           0BB : 126B;  -- 	STORE	L2X
-           0BC : 90C1;  -- 	IN		YPOS
-           0BD : 20B1;  -- 	SUB		PrevY
-           0BE : 8176;  -- 	CALL	Abs
-           0BF : 126C;  -- 	STORE	L2Y
-           0C0 : 8241;  -- 	CALL	L2Estimate
-           0C1 : 8176;  -- 	CALL	Abs
-           0C2 : 20AE;  -- 	SUB		XX		;check if it has gone far enough
-           0C3 : 30B8;  -- 	JNEG	MoveXXTest
-           0C4 : 0AAD;  -- 	Load 	Zero
-           0C5 : 1157;  -- 	STORE	DVel
-           0C6 : 8800;  -- 	RETURN 
-           0C7 : 0000;  -- DD:	DW		0			;value representing # of DEG to turn
-           0C8 : 90C2;  -- 	IN		THETA		;read in current angle
-           0C9 : 18C7;  -- 	ADD		DD			;add value
-           0CA : 8137;  -- 	CALL 	AngleCap	;restrict angle to range 0 to 359
-           0CB : 1156;  -- 	STORE	DTheta		;make robot turn to that angle
-           0CC : 8142;  -- 	CALL	GetThetaErr
-           0CD : 8176;  -- 	CALL	Abs
-           0CE : 6FFB;  -- 	ADDI	-5
-           0CF : 38CC;  -- 	JPOS	RotateByDDTest
-           0D0 : 8800;  -- 	RETURN
-           0D1 : 08C7;  -- 	LOAD	DD
-           0D2 : 8137;  -- 	CALL 	AngleCap
-           0D3 : 1156;  -- 	STORE	DTheta		;make robot go to input angle
-           0D4 : 8142;  -- 	CALL	GetThetaErr
-           0D5 : 8176;  -- 	CALL	Abs
-           0D6 : 6FFB;  -- 	ADDI	-5
-           0D7 : 38D4;  -- 	JPOS	GoToAngleTest
-           0D8 : 8800;  -- 	RETURN
-           0D9 : BFA6;  -- 	LOADI	-90
-           0DA : 10C7;  -- 	STORE	DD
-           0DB : 80C8;  -- 	CALL	RotateByDD
-           0DC : B8FA;  -- 	LOADI	250
-           0DD : 10AE;  -- 	STORE	XX
-           0DE : B896;  -- 	LOADI	150
-           0DF : 10AF;  -- 	STORE 	VV
-           0E0 : 80B2;  -- 	CALL	MoveXX
-           0E1 : B85A;  -- 	LOADI	90
-           0E2 : 10C7;  -- 	STORE	DD
-           0E3 : 80C8;  -- 	CALL	RotateByDD
-           0E4 : 8132;  -- 	CALL	StopMovement
-           0E5 : 8800;  -- 	RETURN
-           0E6 : BFA6;  -- 	LOADI	-90
-           0E7 : 10C7;  -- 	STORE	DD
-           0E8 : 80C8;  -- 	CALL	RotateByDD
-           0E9 : B990;  -- 	LOADI	400
-           0EA : 10AE;  -- 	STORE	XX
-           0EB : B896;  -- 	LOADI	150
-           0EC : 10AF;  -- 	STORE 	VV
-           0ED : 80B2;  -- 	CALL	MoveXX
-           0EE : 8132;  -- 	Call	StopMovement
-           0EF : 8800;  -- 	RETURN
-           0F0 : 90D1;  -- 	IN		IR_LO
-           0F1 : 22D2;  -- 	SUB		REM_1
-           0F2 : 4105;  -- 	JZERO	B1
-           0F3 : 90D1;  -- 	IN		IR_LO
-           0F4 : 22D3;  -- 	SUB		REM_2
-           0F5 : 4108;  -- 	JZERO	B2
-           0F6 : 90D1;  -- 	IN		IR_LO
-           0F7 : 22D4;  -- 	SUB		REM_3
-           0F8 : 410B;  -- 	JZERO	B3
-           0F9 : 90D1;  -- 	IN		IR_LO
-           0FA : 22D5;  -- 	SUB		REM_4
-           0FB : 410E;  -- 	JZERO	B4
-           0FC : 90D1;  -- 	IN		IR_LO
-           0FD : 22D6;  -- 	SUB		REM_5
-           0FE : 4111;  -- 	JZERO	B5
-           0FF : 90D1;  -- 	IN		IR_LO
-           100 : 22D7;  -- 	SUB		REM_6
-           101 : 4114;  -- 	JZERO	B6
-           102 : 90D1;  -- 	IN		IR_LO
-           103 : 22D8;  -- 	SUB		REM_7
-           104 : 4117;  -- 	JZERO	B7
-           105 : 0AE4;  -- B1:	LOAD	DIST_1
-           106 : 12EB;  -- 	STORE	DIST_Current
-           107 : 8800;  -- 	RETURN
-           108 : 0AE5;  -- B2:	LOAD	DIST_2
-           109 : 12EB;  -- 	STORE	DIST_Current
-           10A : 8800;  -- 	RETURN
-           10B : 0AE6;  -- B3:	LOAD	DIST_3
-           10C : 12EB;  -- 	STORE	DIST_Current
-           10D : 8800;  -- 	RETURN
-           10E : 0AE7;  -- B4:	LOAD	DIST_4
-           10F : 12EB;  -- 	STORE	DIST_Current
-           110 : 8800;  -- 	RETURN
-           111 : 0AE8;  -- B5:	LOAD	DIST_5
-           112 : 12EB;  -- 	STORE	DIST_Current
-           113 : 8800;  -- 	RETURN
-           114 : 0AE9;  -- B6:	LOAD	DIST_6
-           115 : 12EB;  -- 	STORE	DIST_Current
-           116 : 8800;  -- 	RETURN
-           117 : 0AEA;  -- B7:	LOAD	DIST_7
-           118 : 12EB;  -- 	STORE	DIST_Current
-           119 : 8800;  -- 	RETURN
-           11A : 80F0;  -- 	CALL	SpaceSelect		;store distance for later
-           11B : B990;  -- 	LOADI	400
-           11C : 10AE;  -- 	STORE	XX
-           11D : B896;  -- 	LOADI	150
-           11E : 10AF;  -- 	STORE 	VV
-           11F : 80B2;  -- 	CALL	MoveXX
-           120 : BFA6;  -- 	LOADI	-90
-           121 : 10C7;  -- 	STORE	DD
-           122 : 80C8;  -- 	CALL	RotateByDD
-           123 : BB84;  -- 	LOADI	900
-           124 : 10AE;  -- 	STORE	XX
-           125 : B896;  -- 	LOADI	150
-           126 : 10AF;  -- 	STORE 	VV
-           127 : 80B2;  -- 	CALL	MoveXX
-           128 : B858;  -- 	LOADI	88
-           129 : 10C7;  -- 	STORE	DD
-           12A : 80C8;  -- 	CALL	RotateByDD
-           12B : 0AEB;  -- 	LOAD	DIST_Current
-           12C : 10AE;  -- 	STORE	XX
-           12D : B896;  -- 	LOADI	150
-           12E : 10AF;  -- 	STORE 	VV
-           12F : 80B2;  -- 	CALL	MoveXX
-           130 : 80E6;  -- 	CALL	PerpPark
-           131 : 8800;  -- 	RETURN
-           132 : 90C2;  -- 	IN 		THETA		;Stop movement
-           133 : 1156;  -- 	STORE	DTheta
-           134 : 0AAD;  -- 	LOAD	Zero
-           135 : 1157;  -- 	STORE 	DVel
-           136 : 8800;  -- 	RETURN
-           137 : 6E98;  -- 	ADDI	-360
-           138 : 313A;  -- 	JNEG	AngleIsNeg
-           139 : 2937;  -- 	JUMP 	AngleCap
-           13A : 6968;  -- 	ADDI	360
-           13B : 313A;  -- 	JNEG	AngleIsNeg
-           13C : 8800;  -- 	RETURN
-           13D : 90D0;  -- 	IN     IR_HI       ; get the high word
-           13E : 9804;  -- 	OUT    SSEG1
+           083 : 404C;  -- 	JZERO	Manual		;go back to manual if so
+           084 : 8142;  -- 	CALL 	GetThetaErr
+           085 : 8176;  -- 	CALL 	Abs
+           086 : 6FF9;  -- 	ADDI	-7
+           087 : 3881;  -- 	JPOS	TurnRight
+           088 : 90C2;  -- 	IN		THETA
+           089 : 6FEC;  -- 	ADDI	-20			;subtract 20 from THETA
+           08A : 8139;  -- 	CALL 	AngleCap	;put angle in range
+           08B : 1156;  -- 	STORE 	DTheta		;store corrected value
+           08C : 2881;  -- 	JUMP 	TurnRight	;otherwise, keep turning
+           08D : 90D1;  -- 	IN 		IR_LO		;check if robot should stop
+           08E : 22E1;  -- 	SUB		REM_STOP	
+           08F : 404C;  -- 	JZERO	Manual		;go back to manual if so
+           090 : 8142;  -- 	CALL 	GetThetaErr
+           091 : 8176;  -- 	CALL 	Abs
+           092 : 6FF9;  -- 	ADDI	-7
+           093 : 388D;  -- 	JPOS	TurnLeft
+           094 : 90C2;  -- 	IN		THETA
+           095 : 6814;  -- 	ADDI	20			;add 20 to THETA
+           096 : 8139;  -- 	CALL 	AngleCap	;put angle in range
+           097 : 1156;  -- 	STORE 	DTheta		;store corrected value
+           098 : 288D;  -- 	JUMP 	TurnLeft	;otherwise, keep turning
+           099 : 80DB;  -- 	CALL	ParallelPark
+           09A : 98D0;  -- 	OUT		IR_HI		;clear command
+           09B : 284C;  -- 	JUMP	Manual
+           09C : 80E8;  -- 	CALL	PerpPark
+           09D : 98D0;  -- 	OUT		IR_HI		;clear command
+           09E : 284C;  -- 	JUMP 	Manual
+           09F : 813F;  -- 	CALL   IRDisp      ; Display the current IR code
+           0A0 : 289F;  -- 	JUMP   ForeverDisp
+           0A1 : A00F;  -- 	CLI    &B1111      ; disable all interrupts
+           0A2 : 0AAD;  -- 	LOAD   Zero        ; Stop everything.
+           0A3 : 9883;  -- 	OUT    LVELCMD
+           0A4 : 988B;  -- 	OUT    RVELCMD
+           0A5 : 98B2;  -- 	OUT    SONAREN
+           0A6 : 08A9;  -- 	LOAD   DEAD        ; An indication that we are dead
+           0A7 : 9805;  -- 	OUT    SSEG2       ; "dEAd" on the LEDs
+           0A8 : 28A8;  -- 	JUMP   Forever     ; Do this forever.
+           0A9 : DEAD;  -- 	DEAD:  DW &HDEAD   ; Example of a "local" variable
+           0AA : 813F;  -- 	CALL	IRDisp
+           0AB : 8158;  -- 	CALL	ControlMovement
+           0AC : 90D1;  -- 	IN		IR_LO
+           0AD : 22DC;  -- 	SUB		REM_PWR
+           0AE : 404C;  -- 	JZERO	Manual
+           0AF : B000;  -- 	RETI   ; return from ISR
+           0B0 : 0000;  -- XX:		DW	0		;# of cm to move
+           0B1 : 0000;  -- VV:		DW	0		;Speed (and direction)
+           0B2 : 0000;  -- PrevX:	DW	0
+           0B3 : 0000;  -- PrevY:	DW	0
+           0B4 : 08B1;  -- 	LOAD	VV
+           0B5 : 1157;  -- 	STORE 	DVel
+           0B6 : 90C0;  -- 	IN 		XPOS
+           0B7 : 10B2;  -- 	STORE	PrevX
+           0B8 : 90C1;  -- 	IN 		YPOS
+           0B9 : 10B3;  -- 	STORE 	PrevY
+           0BA : 90C0;  -- 	IN		XPOS
+           0BB : 20B2;  -- 	SUB		PrevX
+           0BC : 8176;  -- 	CALL	Abs
+           0BD : 126B;  -- 	STORE	L2X
+           0BE : 90C1;  -- 	IN		YPOS
+           0BF : 20B3;  -- 	SUB		PrevY
+           0C0 : 8176;  -- 	CALL	Abs
+           0C1 : 126C;  -- 	STORE	L2Y
+           0C2 : 8241;  -- 	CALL	L2Estimate
+           0C3 : 8176;  -- 	CALL	Abs
+           0C4 : 20B0;  -- 	SUB		XX		;check if it has gone far enough
+           0C5 : 30BA;  -- 	JNEG	MoveXXTest
+           0C6 : 0AAD;  -- 	Load 	Zero
+           0C7 : 1157;  -- 	STORE	DVel
+           0C8 : 8800;  -- 	RETURN 
+           0C9 : 0000;  -- DD:	DW		0			;value representing # of DEG to turn
+           0CA : 90C2;  -- 	IN		THETA		;read in current angle
+           0CB : 18C9;  -- 	ADD		DD			;add value
+           0CC : 8139;  -- 	CALL 	AngleCap	;restrict angle to range 0 to 359
+           0CD : 1156;  -- 	STORE	DTheta		;make robot turn to that angle
+           0CE : 8142;  -- 	CALL	GetThetaErr
+           0CF : 8176;  -- 	CALL	Abs
+           0D0 : 6FFB;  -- 	ADDI	-5
+           0D1 : 38CE;  -- 	JPOS	RotateByDDTest
+           0D2 : 8800;  -- 	RETURN
+           0D3 : 08C9;  -- 	LOAD	DD
+           0D4 : 8139;  -- 	CALL 	AngleCap
+           0D5 : 1156;  -- 	STORE	DTheta		;make robot go to input angle
+           0D6 : 8142;  -- 	CALL	GetThetaErr
+           0D7 : 8176;  -- 	CALL	Abs
+           0D8 : 6FFB;  -- 	ADDI	-5
+           0D9 : 38D6;  -- 	JPOS	GoToAngleTest
+           0DA : 8800;  -- 	RETURN
+           0DB : BFA6;  -- 	LOADI	-90
+           0DC : 10C9;  -- 	STORE	DD
+           0DD : 80CA;  -- 	CALL	RotateByDD
+           0DE : B8FA;  -- 	LOADI	250
+           0DF : 10B0;  -- 	STORE	XX
+           0E0 : B896;  -- 	LOADI	150
+           0E1 : 10B1;  -- 	STORE 	VV
+           0E2 : 80B4;  -- 	CALL	MoveXX
+           0E3 : B85A;  -- 	LOADI	90
+           0E4 : 10C9;  -- 	STORE	DD
+           0E5 : 80CA;  -- 	CALL	RotateByDD
+           0E6 : 8134;  -- 	CALL	StopMovement
+           0E7 : 8800;  -- 	RETURN
+           0E8 : BFA6;  -- 	LOADI	-90
+           0E9 : 10C9;  -- 	STORE	DD
+           0EA : 80CA;  -- 	CALL	RotateByDD
+           0EB : B990;  -- 	LOADI	400
+           0EC : 10B0;  -- 	STORE	XX
+           0ED : B896;  -- 	LOADI	150
+           0EE : 10B1;  -- 	STORE 	VV
+           0EF : 80B4;  -- 	CALL	MoveXX
+           0F0 : 8134;  -- 	Call	StopMovement
+           0F1 : 8800;  -- 	RETURN
+           0F2 : 90D1;  -- 	IN		IR_LO
+           0F3 : 22D2;  -- 	SUB		REM_1
+           0F4 : 4107;  -- 	JZERO	B1
+           0F5 : 90D1;  -- 	IN		IR_LO
+           0F6 : 22D3;  -- 	SUB		REM_2
+           0F7 : 410A;  -- 	JZERO	B2
+           0F8 : 90D1;  -- 	IN		IR_LO
+           0F9 : 22D4;  -- 	SUB		REM_3
+           0FA : 410D;  -- 	JZERO	B3
+           0FB : 90D1;  -- 	IN		IR_LO
+           0FC : 22D5;  -- 	SUB		REM_4
+           0FD : 4110;  -- 	JZERO	B4
+           0FE : 90D1;  -- 	IN		IR_LO
+           0FF : 22D6;  -- 	SUB		REM_5
+           100 : 4113;  -- 	JZERO	B5
+           101 : 90D1;  -- 	IN		IR_LO
+           102 : 22D7;  -- 	SUB		REM_6
+           103 : 4116;  -- 	JZERO	B6
+           104 : 90D1;  -- 	IN		IR_LO
+           105 : 22D8;  -- 	SUB		REM_7
+           106 : 4119;  -- 	JZERO	B7
+           107 : 0AE4;  -- B1:	LOAD	DIST_1
+           108 : 12EB;  -- 	STORE	DIST_Current
+           109 : 8800;  -- 	RETURN
+           10A : 0AE5;  -- B2:	LOAD	DIST_2
+           10B : 12EB;  -- 	STORE	DIST_Current
+           10C : 8800;  -- 	RETURN
+           10D : 0AE6;  -- B3:	LOAD	DIST_3
+           10E : 12EB;  -- 	STORE	DIST_Current
+           10F : 8800;  -- 	RETURN
+           110 : 0AE7;  -- B4:	LOAD	DIST_4
+           111 : 12EB;  -- 	STORE	DIST_Current
+           112 : 8800;  -- 	RETURN
+           113 : 0AE8;  -- B5:	LOAD	DIST_5
+           114 : 12EB;  -- 	STORE	DIST_Current
+           115 : 8800;  -- 	RETURN
+           116 : 0AE9;  -- B6:	LOAD	DIST_6
+           117 : 12EB;  -- 	STORE	DIST_Current
+           118 : 8800;  -- 	RETURN
+           119 : 0AEA;  -- B7:	LOAD	DIST_7
+           11A : 12EB;  -- 	STORE	DIST_Current
+           11B : 8800;  -- 	RETURN
+           11C : 80F2;  -- 	CALL	SpaceSelect		;store distance for later
+           11D : B990;  -- 	LOADI	400
+           11E : 10B0;  -- 	STORE	XX
+           11F : B896;  -- 	LOADI	150
+           120 : 10B1;  -- 	STORE 	VV
+           121 : 80B4;  -- 	CALL	MoveXX
+           122 : BFA6;  -- 	LOADI	-90
+           123 : 10C9;  -- 	STORE	DD
+           124 : 80CA;  -- 	CALL	RotateByDD
+           125 : BB84;  -- 	LOADI	900
+           126 : 10B0;  -- 	STORE	XX
+           127 : B896;  -- 	LOADI	150
+           128 : 10B1;  -- 	STORE 	VV
+           129 : 80B4;  -- 	CALL	MoveXX
+           12A : B858;  -- 	LOADI	88
+           12B : 10C9;  -- 	STORE	DD
+           12C : 80CA;  -- 	CALL	RotateByDD
+           12D : 0AEB;  -- 	LOAD	DIST_Current
+           12E : 10B0;  -- 	STORE	XX
+           12F : B896;  -- 	LOADI	150
+           130 : 10B1;  -- 	STORE 	VV
+           131 : 80B4;  -- 	CALL	MoveXX
+           132 : 80E8;  -- 	CALL	PerpPark
+           133 : 8800;  -- 	RETURN
+           134 : 90C2;  -- 	IN 		THETA		;Stop movement
+           135 : 1156;  -- 	STORE	DTheta
+           136 : 0AAD;  -- 	LOAD	Zero
+           137 : 1157;  -- 	STORE 	DVel
+           138 : 8800;  -- 	RETURN
+           139 : 6E98;  -- 	ADDI	-360
+           13A : 313C;  -- 	JNEG	AngleIsNeg
+           13B : 2939;  -- 	JUMP 	AngleCap
+           13C : 6968;  -- 	ADDI	360
+           13D : 313C;  -- 	JNEG	AngleIsNeg
+           13E : 8800;  -- 	RETURN
            13F : 90D1;  -- 	IN     IR_LO       ; get the low word
            140 : 9805;  -- 	OUT    SSEG2
            141 : 8800;  -- 	RETURN

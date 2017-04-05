@@ -113,7 +113,22 @@ START:
 	SUB		REM_7
 	JZERO 	Autonomous
 	
+	IN 		IR_LO	
+	SUB		REM_8
+	JZERO 	SonarTest
+	
 	JUMP 	START
+	
+SonarTest:
+	;enable sonar sensor 0
+	LOADI	&B00000001
+	OUT		SONAREN
+	
+	;display value of sensor 0
+	IN		DIST0
+	OUT		SSEG1
+	
+	JUMP	SonarTest
 
 Autonomous:
 	CALL 	AutoPark
@@ -582,8 +597,8 @@ AngleIsNeg:
 
 ; Displays the current 
 IRDisp:
-	IN     IR_HI       ; get the high word
-	OUT    SSEG1
+	;IN     IR_HI       ; get the high word
+	;OUT    SSEG1
 	IN     IR_LO       ; get the low word
 	OUT    SSEG2
 ;	OUT    IR_HI       ; this would reset the value to 0
