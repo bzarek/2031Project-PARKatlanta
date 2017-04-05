@@ -535,10 +535,15 @@ AutoPark:
 	STORE 	VV
 	CALL	MoveXX
 	
+;Rotate 90 Degrees (using GoToAngle)
+	LOADI	270
+	Store	DD
+	CALL	GoToAngle
+	
 ;Rotate 90 Degrees
-	LOADI	-90
-	STORE	DD
-	CALL	RotateByDD
+	;LOADI	-90
+	;STORE	DD
+	;CALL	RotateByDD
 	
 ;Move Forward
 	LOADI	900
@@ -547,10 +552,15 @@ AutoPark:
 	STORE 	VV
 	CALL	MoveXX
 	
+;Rotate 90 Degrees (using GoToAngle)
+	LOADI	0
+	Store	DD
+	CALL	GoToAngle
+	
 ;Rotate 90 Degrees
-	LOADI	88
-	STORE	DD
-	CALL	RotateByDD
+	;LOADI	88
+	;STORE	DD
+	;CALL	RotateByDD
 	
 ;Move Forward (distance calculated by SpaceSelect
 	LOAD	DIST_Current
