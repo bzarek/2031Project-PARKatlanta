@@ -115,20 +115,13 @@ START:
 	
 	IN 		IR_LO	
 	SUB		REM_8
-	JZERO 	SonarTest
+	JZERO 	SonarTestParallel
 	
 	IN 		IR_LO	
 	SUB		REM_9
-	JZERO 	SoundTest
+	JZERO 	TestMoveAlongWall
 	
 	JUMP 	START
-	
-SonarTest:
-	CALL	PerpParkWithSonar
-	JUMP	Manual
-
-Autonomous:
-	CALL 	AutoPark
 	
 SoundTest:
 	LOADI	&H0410
@@ -136,6 +129,22 @@ SoundTest:
 	
 	LOADI	&H0418
 	OUT		BEEP
+	JUMP 	Manual
+	
+TestMoveAlongWall:
+	LOADI	2000
+	STORE	XX
+	LOADI	200
+	STORE	VV
+	CALL	MoveXXByWall
+	JUMP	Manual
+	
+SonarTestParallel:
+	CALL	ParallelParkWithSonar
+	JUMP 	Manual
+
+Autonomous:
+	CALL 	AutoPark
 
 Manual:
 	CALL	StopMovement
@@ -258,7 +267,7 @@ P1:
 	JUMP	Manual
 	
 P2:
-	CALL	PerpPark
+	CALL	PerpParkWithSonar
 	OUT		IR_HI		;clear command
 	JUMP 	Manual
 
@@ -290,7 +299,7 @@ Forever:
 ; the power button: returns to Manual if power is pressed.
 CTimer_ISR:
 	CALL	IRDisp
-	CALL	SONARDisp
+	;CALL	SONARDisp
 	CALL	ControlMovement
 	
 	;stop movement and return to manual if power button is pressed
@@ -368,7 +377,7 @@ RotateByDD:
 RotateByDDTest:			;keep looping until angle is correct
 	CALL	GetThetaErr
 	CALL	Abs
-	ADDI	-5
+	ADDI	-7
 	JPOS	RotateByDDTest
 	
 	RETURN
@@ -388,7 +397,7 @@ GoToAngle:
 GoToAngleTest:			;keep looping until angle is correct
 	CALL	GetThetaErr
 	CALL	Abs
-	ADDI	-5
+	ADDI	-7
 	JPOS	GoToAngleTest
 	
 	RETURN
@@ -434,6 +443,8 @@ ParallelParkWithSonar:
 	LOADI	&B00100000
 	OUT		SONAREN
 	
+	CALL	WaitHalfSec
+	
 	;read value, store it in temp
 	IN		DIST5
 	STORE	Temp
@@ -457,18 +468,8 @@ ParallelParkWithSonar:
 	JZERO	MoveIntoParallelSpace	;no adjustment if invalid reading
 	
 	;get adjustment distance
-	LOADI 	35		;Distance it should be from the wall
-	SUB		Temp	;Subtract actual distance from wall
-	
-	;multiply by 10 (conversion to mm)
-	STORE	m16sA	
-	LOADI	10
-	STORE	m16sB
-	CALL	Mult16s
-	
-	;store adjusted distance in XX
-	LOAD	mres16sL
-	ADD		250		;base distance
+	LOAD 	Temp		;Current distance from the wall
+	ADDI	-100		;Subtract offset	
 	STORE	XX
 	
 MoveIntoParallelSpace:
@@ -523,6 +524,9 @@ PerpParkWithSonar:
 	LOADI	&B00000001
 	OUT		SONAREN
 	
+	;delay
+	CALL	WaitHalfSec
+	
 	;read value, store it in temp
 	IN		DIST0
 	STORE	Temp
@@ -539,30 +543,21 @@ PerpParkWithSonar:
 	;Adjust position based on sensor reading:
 	
 	;check for invalid reading
-	LOADI	400		;default distance
+	LOADI	360		;default distance
 	STORE	XX		
 	LOAD	Temp
 	SUB		NegOne	;check if valid reading or not
 	JZERO	MoveIntoPerpSpace	;no adjustment if invalid reading
 	
 	;get adjustment distance
-	LOADI 	30		;Distance it should be from the wall
+	LOADI 	&HC3		;Distance it should be from the wall
 	SUB		Temp	;Subtract actual distance from wall
-	
-	;multiply by 10 (conversion to mm)
-	STORE	m16sA	
-	LOADI	10
-	STORE	m16sB
-	CALL	Mult16s
-	
-	;store adjusted distance in XX
-	LOAD	mres16sL
-	ADD		400		;base distance
+	ADDI	400		;base distance
 	STORE	XX
 	
 MoveIntoPerpSpace:
 	;Move Forward (XX already given value)
-	LOADI	150
+	LOADI	200
 	STORE 	VV
 	CALL	MoveXX
 	
@@ -583,6 +578,10 @@ MoveIntoPerpSpace:
 ;***************************************************************
 
 MoveXXByWall:
+	;enable sonar sensor 0
+	LOADI	&B00100001
+	OUT		SONAREN
+	
 	;set velocity 
 	LOAD	VV
 	STORE 	DVel
@@ -594,34 +593,18 @@ MoveXXByWall:
 	STORE 	PrevY
 	
 	;Store initial distance from left wall:
-	;enable sonar sensor 1
-	LOADI	&B00000001
-	OUT		SONAREN
-	
-	;read value, store it in temp
-	IN		DIST0
-	STORE	Temp
+	CALL	WaitHalfSec
 	
 MoveXXByWallTest: ;continuously check how far it has traveled
 	;check proximity to wall
-	IN		DIST0	;get current distance
-	SUB		Temp	;subtract initial distance
-	ADDI	2		;add buffer
-	JNEG	CorrectRight
-	ADDI	-4		;equivalent to adding -2 to DIST0-Temp
-	JPOS	CorrectLeft
-	JUMP	NoCorrection
 	
-CorrectRight:
-	LOADI	-5
-	STORE	DD
-	CALL	RotateByDD
-	JUMP	NoCorrection
+	IN		DIST0	;get current distance from left wall
+	SUB		&H91	;subtract lowest allowable distance
+	JNEG	CorrectRight	;correct if too close to wall
 	
-CorrectLeft:
-	LOADI	5
-	STORE	DD
-	CALL	RotateByDD
+	IN		DIST5	;get current distance from right wall
+	SUB		&H91	;subtract lowest allowable distance
+	JNEG	CorrectLeft	;correct if too close to wall
 	
 NoCorrection:
 	IN		XPOS
@@ -644,6 +627,20 @@ NoCorrection:
 	STORE	DVel
 	
 	RETURN 
+	
+CorrectRight:
+	LOADI	-5
+	STORE	DD
+	CALL	RotateByDD
+	CALL	WaitHalfSec
+	JUMP	NoCorrection
+	
+CorrectLeft:
+	LOADI	5
+	STORE	DD
+	CALL	RotateByDD
+	CALL	WaitHalfSec
+	JUMP	NoCorrection
 	
 ;***************************************************************
 ;SpaceSelect
@@ -765,7 +762,7 @@ AutoPark:
 	CALL	MoveXX
 	
 ;Execute Perpendicular Park maneuver
-	CALL	PerpPark
+	CALL	PerpParkWithSonar
 	
 	RETURN
 	
@@ -804,11 +801,11 @@ AngleIsNeg:
 	
 SONARDisp:
 	;enable sonar sensor 0
-	LOADI	&B00000001
+	LOADI	&B00100000
 	OUT		SONAREN
 	
 	;display value of sensor 0
-	IN		DIST0
+	IN		DIST5
 	OUT		SSEG1
 	
 	RETURN
@@ -1268,6 +1265,16 @@ Wloop:
 	OUT    XLEDS       ; User-feedback that a pause is occurring.
 	ADDI   -10         ; 1 second at 10Hz.
 	JNEG   Wloop
+	RETURN
+	
+; Subroutine to wait (block) for 1 second
+WaitHalfSec:
+	OUT    TIMER
+Wloop2:
+	IN     TIMER
+	OUT    XLEDS       ; User-feedback that a pause is occurring.
+	ADDI   -5         ; 1 second at 10Hz.
+	JNEG   Wloop2
 	RETURN
 
 ; This subroutine will get the battery voltage,
