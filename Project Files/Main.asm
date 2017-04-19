@@ -262,7 +262,7 @@ TurnLeft:
 	JUMP 	TurnLeft	;otherwise, keep turning
 
 P1:
-	CALL	ParallelPark
+	CALL	ParallelParkWithSonar
 	OUT		IR_HI		;clear command
 	JUMP	Manual
 	
@@ -299,7 +299,7 @@ Forever:
 ; the power button: returns to Manual if power is pressed.
 CTimer_ISR:
 	CALL	IRDisp
-	;CALL	SONARDisp
+	;CALL	SpeedAdj
 	CALL	ControlMovement
 	
 	;stop movement and return to manual if power button is pressed
@@ -469,7 +469,7 @@ ParallelParkWithSonar:
 	
 	;get adjustment distance
 	LOAD 	Temp		;Current distance from the wall
-	ADDI	-100		;Subtract offset	
+	ADDI	-170		;Subtract offset	
 	STORE	XX
 	
 MoveIntoParallelSpace:
@@ -552,7 +552,7 @@ PerpParkWithSonar:
 	;get adjustment distance
 	LOADI 	&HC3		;Distance it should be from the wall
 	SUB		Temp	;Subtract actual distance from wall
-	ADDI	400		;base distance
+	ADDI	380		;base distance
 	STORE	XX
 	
 MoveIntoPerpSpace:
@@ -721,7 +721,7 @@ AutoPark:
 	CALL	SpaceSelect		;store distance for later
 
 ;Move Forward
-	LOADI	400
+	LOADI	420
 	STORE	XX
 	LOADI	150
 	STORE 	VV
@@ -738,14 +738,14 @@ AutoPark:
 	;CALL	RotateByDD
 	
 ;Move Forward
-	LOADI	900
+	LOADI	875
 	STORE	XX
 	LOADI	150
 	STORE 	VV
 	CALL	MoveXX
 	
 ;Rotate 90 Degrees (using GoToAngle)
-	LOADI	0
+	LOADI	5
 	Store	DD
 	CALL	GoToAngle
 	
@@ -810,7 +810,39 @@ SONARDisp:
 	
 	RETURN
 	
+SpeedAdj:
+	IN		VV
+	ADDI	-101
+	JNEG	NoSpeedAdj
 	
+	IN		VV
+	ADDI	-499
+	JPOS	NoSpeedAdj
+	
+	IN 		IR_LO	
+	SUB		REM_VOLUP
+	JZERO 	IncSpeed
+	
+	IN 		IR_LO	
+	SUB		REM_VOLDOWN
+	JZERO 	DecSpeed
+	
+	RETURN
+	
+IncSpeed:
+	LOAD	VV
+	ADDI	50
+	STORE	VV
+	RETURN
+	
+DecSpeed:
+	LOAD	VV
+	ADDI	-50
+	STORE	VV
+	RETURN
+	
+NoSpeedAdj:
+	RETURN
 	
 	
 ;***************************************************************
@@ -1431,17 +1463,19 @@ REM_PAUSE:	DW	&B1000100001110111
 REM_STOP:	DW	&B0000100011110111
 REM_PREV:	DW	&H42BD
 REM_MUTE:	DW 	&H906F
+REM_VOLUP:	DW	&H406F
+REM_VOLDOWN: DW	&HC03F
 
 ;**********************************************************************
 ;Distance constants
 ;**********************************************************************
 
-DIST_1:		DW	2500
-DIST_2:		DW	2150
-DIST_3:		DW	1800
-DIST_4:		DW	1450
-DIST_5:		DW	1100
-DIST_6:		DW	750
+DIST_1:		DW	2600
+DIST_2:		DW	2230
+DIST_3:		DW	1825
+DIST_4:		DW	1470
+DIST_5:		DW	1120
+DIST_6:		DW	760
 DIST_7:		DW	400
 DIST_Current:	DW 	0
 
